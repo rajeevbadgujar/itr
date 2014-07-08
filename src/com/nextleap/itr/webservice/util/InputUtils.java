@@ -13,7 +13,7 @@ public class InputUtils {
 		inputs.setXmlZipFilePath(System.getProperty(ITRConstants.XML_ZIP_FILE_PATH));
 		inputs.setXmlPfxFile(System.getProperty(ITRConstants.XML_PFX_FILE_PATH));
 		inputs.setXmlPfxFilePassword(System.getProperty(ITRConstants.XML_PFX_FILE_PASSWORD));
-		inputs.setXmlSignature(new Boolean(System.getenv(ITRConstants.XML_SIGNATURE)));
+		inputs.setXmlSignature(new Boolean(System.getProperty(ITRConstants.XML_SIGNATURE_REQUIRED)));
 		inputs.setResponseFilePath(System.getProperty(ITRConstants.RESPONSE_FILE_PATH));
 		inputs.setErrorFilePath(System.getProperty(ITRConstants.ERROR_FILE_PATH));
 		inputs.setPanID(System.getProperty(ITRConstants.PAN_ID));

@@ -5,6 +5,7 @@ import in.gov.incometaxindiaefiling.ws.ds.common.v_1_0.DITWSAuthInfo;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -133,7 +134,7 @@ public class SecurityUtils {
 		return authInfo;
 	}
 	
-	public static Document signXml(ItrInputs inputs, FileInputStream fileInputStream) 
+	public static Document signXml(ItrInputs inputs, InputStream fileInputStream) 
 			throws FileNotFoundException, SAXException, IOException, ParserConfigurationException, 
 			GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException {
 		// First, create the DOM XMLSignatureFactory that will be used to
@@ -146,7 +147,8 @@ public class SecurityUtils {
         Document xmlDocument = documentBuilderFactory.newDocumentBuilder().parse(fileInputStream);
         
         XMLStructure structure = new DOMStructure(xmlDocument.getDocumentElement());
-        XMLObject documentObject = signatureFactory.newXMLObject(Collections.singletonList(structure), ITRConstants.ITR_TAG, null, null);
+        XMLObject documentObject = signatureFactory.newXMLObject(Collections.singletonList(structure), 
+        		ITRConstants.ITR_TAG, null, null);
         
         // Next, create a Reference to a same-document URI that is an Object
         // element and specify the SHA1 digest algorithm
@@ -161,7 +163,7 @@ public class SecurityUtils {
             signatureFactory.newSignatureMethod(SignatureMethod.RSA_SHA1, null),
             Collections.singletonList(ref));
         
-        KeyStore keyStore = loadKeyStoreFromPFXFile(inputs.getXmlZipFilePath(), inputs.getXmlPfxFilePassword());
+        KeyStore keyStore = loadKeyStoreFromPFXFile(inputs.getXmlPfxFile(), inputs.getXmlPfxFilePassword());
         PrivateKeyAndCertChain keyAndCertChain = getPrivateKeyAndCertChain(keyStore, inputs.getXmlPfxFilePassword());
         
         // Create the KeyInfo containing the X509Data.
@@ -173,7 +175,8 @@ public class SecurityUtils {
         KeyInfo keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(x509Data));
         
         // Create the XMLSignature, but don't sign it yet.
-        XMLSignature signature = signatureFactory.newXMLSignature(signedInfo, keyInfo, Collections.singletonList(documentObject), null, null);
+        XMLSignature signature = signatureFactory.newXMLSignature(signedInfo, keyInfo, 
+        		Collections.singletonList(documentObject), null, null);
         
         // Create a DOMSignContext and specify the RSA PrivateKey and
         // location of the resulting XMLSignature's parent element.

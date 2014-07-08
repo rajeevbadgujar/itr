@@ -12,8 +12,6 @@ public interface ITRConstants {
 	
 	String XML_ZIP_FILE_PATH = "xmlZipFilePath";
 	
-	String XML_SIGNATURE = "xmlSignature";
-	
 	String XML_PFX_FILE_PATH = "xmlPfxFilePath";
 	
 	String XML_PFX_FILE_PASSWORD = "xmlPfxFilePassword";
@@ -36,8 +34,10 @@ public interface ITRConstants {
 	String TOKEN_NUMBER = "tokenNumber";
 	
 	String PAN_ID = "panID";
+
+	public static final String SIGNED_XMLS_ZIP_FILE_NAME = "signedXmls.zip";
 	
 	public static final String DOM = "DOM";
 
-	public static final String ITR_TAG = "ITR"; 
+	public static final String ITR_TAG = "ITR";
 }
