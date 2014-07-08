@@ -62,26 +62,5 @@ public class FileUtils {
 				fin.close();
 		}
 		return fileContent;
-	}
-	
-	public static void zipEntry(String filePath) throws ZipException, IOException {
-		ZipFile zipFile = new ZipFile(new File(filePath));
-		Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-		ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(filePath));
-		while(zipEntries.hasMoreElements()) {
-			ZipEntry entry = zipEntries.nextElement();
-			System.out.println(entry.getName());
-			System.out.println(entry.getSize());
-			System.out.println(entry.getCompressedSize());
-			InputStream inputStream = zipFile.getInputStream(entry);
-			byte[] byteArray = new byte[(int) entry.getSize()];
-			inputStream.read(byteArray);
-			System.out.println(new String(byteArray));
-			ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream("E:\\WSDL\\signedXmlFile.zip"));
-			outputStream.putNextEntry(new ZipEntry(entry));
-			outputStream.close();
-			inputStream.close();
-		}	
-	}
-	
+	}	
 }
