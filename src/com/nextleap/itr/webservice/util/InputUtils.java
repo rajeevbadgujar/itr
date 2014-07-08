@@ -1,0 +1,54 @@
+package com.nextleap.itr.webservice.util;
+
+import com.nextleap.itr.webservice.beans.ItrInputs;
+import com.nextleap.itr.webservice.constants.ITRConstants;
+
+public class InputUtils {
+
+	public static void populateItrReturnInputs(ItrInputs inputs) {
+		inputs.setEriUserId(System.getProperty(ITRConstants.USER_ID));
+		inputs.setEriPassowrd(System.getProperty(ITRConstants.USER_PASSWORD));
+		inputs.setEriPfxFilePath(System.getProperty(ITRConstants.ERI_PFX_FILE_PATH));
+		inputs.setEriPfxFilePassword(System.getProperty(ITRConstants.ERI_PFX_FILE_PASSWORD));
+		inputs.setXmlZipFilePath(System.getProperty(ITRConstants.XML_ZIP_FILE_PATH));
+		inputs.setXmlPfxFile(System.getProperty(ITRConstants.XML_PFX_FILE_PATH));
+		inputs.setXmlPfxFilePassword(System.getProperty(ITRConstants.XML_PFX_FILE_PASSWORD));
+		inputs.setXmlSignature(new Boolean(System.getenv(ITRConstants.XML_SIGNATURE)));
+		inputs.setResponseFilePath(System.getProperty(ITRConstants.RESPONSE_FILE_PATH));
+		inputs.setErrorFilePath(System.getProperty(ITRConstants.ERROR_FILE_PATH));
+		inputs.setPanID(System.getProperty(ITRConstants.PAN_ID));
+		inputs.setTokenNumber(System.getProperty(ITRConstants.TOKEN_NUMBER));
+	}
+	
+	public static boolean validateForITRSubmit(ItrInputs inputs) {
+		boolean validate = true;
+		if(!InputUtils.validateBasic(inputs) 
+				|| (inputs.getXmlZipFilePath()==null || inputs.getXmlZipFilePath().equals(""))
+				) {
+			validate = false;
+		} 
+		return validate;
+	}
+	
+	public static boolean validateBasic(ItrInputs inputs) {
+		boolean validate = true;
+		if((inputs.getEriUserId()==null || inputs.getEriUserId().equals(""))
+				|| (inputs.getEriPassowrd()==null || inputs.getEriPassowrd().equals(""))
+				|| (inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
+				|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))) {
+			validate = false;
+		}
+		return validate;
+	}
+	
+	public static boolean validateForITRVStatus(ItrInputs inputs) {
+		boolean validate = true;
+		if(!InputUtils.validateBasic(inputs) 
+				|| (inputs.getPanID()==null || inputs.getPanID().equals(""))
+				|| (inputs.getTokenNumber()==null || inputs.getTokenNumber().equals(""))
+				) {
+			validate = false;
+		} 
+		return validate;
+	}
+}
