@@ -54,10 +54,7 @@ public class StatusITRVService {
 				| GetITRVServiceFaultException e) {
 			error = e.getMessage();
 			result = false;
-		} catch (FileNotFoundException e) {
-			error = e.getMessage();
-			result = false;
-		} catch (GeneralSecurityException e) {
+		} catch (FileNotFoundException | GeneralSecurityException e) {
 			error = e.getMessage();
 			result = false;
 		} catch (IOException e) {

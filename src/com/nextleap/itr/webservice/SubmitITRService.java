@@ -15,19 +15,26 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dsig.XMLSignatureException;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
 import com.nextleap.itr.webservice.constants.ITRConstants;
@@ -85,31 +92,24 @@ public class SubmitITRService {
 			String str  = submitITR.getResult();
 			fileUtils.write(inputs.getResponseFilePath(), "Token number for the attached ZIP file " 
 					+ inputs.getXmlZipFilePath() + " is :"+ str);
-		} catch(ITRInvalidDocFaultException itrInvalidDocExcep) {
-			error = itrInvalidDocExcep.getMessage();
+		} catch (ITRBusinessServiceFaultException | ITRCredentialFaultException
+				| ITRFaultException | ITRInvalidCertificateFaultException
+				| ITRInvalidDocFaultException | ITRServiceFaultException e) {
+			error = e.getMessage();
 			result = false;
-        } catch(ITRCredentialFaultException itrCredFaultExcep) {
-        	error = itrCredFaultExcep.getMessage();
-        	result = false;
-        } catch(ITRInvalidCertificateFaultException itrInvalidCertFaultExcep) {
-        	error = itrInvalidCertFaultExcep.getMessage();
-        	result = false;
-        } catch(ITRServiceFaultException itrServiceFaultExcep) {
-        	error = itrServiceFaultExcep.getMessage();
-        	result = false;
-        } catch(ITRBusinessServiceFaultException itrBixEx) {
-        	error = itrBixEx.getMessage();
-        	result = false;
-        } catch(ITRFaultException itrFaultExcep) {
-        	error = itrFaultExcep.getMessage();
-        	result = false;
-        } catch(FileNotFoundException exception) {
-			System.out.println(exception.getMessage());
+		} catch (FileNotFoundException | SAXException | ParserConfigurationException 
+				| GeneralSecurityException | MarshalException | XMLSignatureException 
+				| TransformerException e) {
+			error = e.getMessage();
 			result = false;
-		} catch (Exception ex) {
-        	error = ex.getMessage();
-        	result = false;
-        } finally {
+		} catch (IOException e) {
+			error = e.getMessage();
+			result = false;
+		} catch (Exception e) {
+			error = e.getMessage();
+			result = false;
+		} finally {
+		
         	fileUtils.write(inputs.getErrorFilePath(), error);
         }
 		return result;
