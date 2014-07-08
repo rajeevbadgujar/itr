@@ -110,4 +110,17 @@ public class ItrInputs {
 	public void setPanID(String panID) {
 		this.panID = panID;
 	}
+	
+	@Override
+	public String toString() {
+		return "ItrInputs [eriUserId=" + eriUserId + ", eriPassowrd="
+				+ eriPassowrd + ", xmlZipFilePath=" + xmlZipFilePath
+				+ ", eriPfxFilePath=" + eriPfxFilePath
+				+ ", eriPfxFilePassword=" + eriPfxFilePassword
+				+ ", xmlSignature=" + xmlSignature + ", xmlPfxFile="
+				+ xmlPfxFile + ", xmlPfxFilePassword=" + xmlPfxFilePassword
+				+ ", responseFilePath=" + responseFilePath + ", errorFilePath="
+				+ errorFilePath + ", tokenNumber=" + tokenNumber + ", panID="
+				+ panID + "]";
+	}
 }
