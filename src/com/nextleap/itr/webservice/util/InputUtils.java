@@ -26,22 +26,28 @@ public class InputUtils {
 		boolean validate = true;
 		if(!InputUtils.validateBasic(inputs) 
 				|| (inputs.getXmlZipFilePath()==null || inputs.getXmlZipFilePath().equals(""))
-				|| ((inputs.getXmlSignature() && !inputs.isHardToken()) 
-						&& (inputs.getXmlPfxFile()==null || inputs.getXmlPfxFile().equals("") 
-							|| inputs.getXmlPfxFilePassword()==null || inputs.getXmlPfxFilePassword().equals("")))
-				) {
+				|| validateXmlSigningParam(inputs)) {
 			validate = false;
 		} 
 		return validate;
+	}
+
+	/**
+	 * @param inputs
+	 * @return
+	 */
+	private static boolean validateXmlSigningParam(ItrInputs inputs) {
+		return (inputs.getXmlSignature() && (!inputs.isHardToken() || inputs.getHardTokenPin()==null || inputs.getHardTokenPin().equals(""))) 
+				&& (inputs.getXmlPfxFile()==null || inputs.getXmlPfxFile().equals("") 
+					|| inputs.getXmlPfxFilePassword()==null || inputs.getXmlPfxFilePassword().equals(""));
 	}
 	
 	public static boolean validateBasic(ItrInputs inputs) {
 		boolean validate = true;
 		if((inputs.getEriUserId()==null || inputs.getEriUserId().equals(""))
 				|| (inputs.getEriPassowrd()==null || inputs.getEriPassowrd().equals(""))
-				|| ((!inputs.isHardToken() || inputs.getHardTokenPin()== null || inputs.getHardTokenPin().equals("")) 
-						&& ((inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
-								|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))))) {
+				|| (inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
+				|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))) {
 			validate = false;
 		}
 		return validate;
