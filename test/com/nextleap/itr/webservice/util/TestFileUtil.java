@@ -1,11 +1,6 @@
 package com.nextleap.itr.webservice.util;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TestFileUtil {
 

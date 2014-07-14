@@ -12,7 +12,6 @@ import in.gov.incometaxindiaefiling.ws.ds.common.v_1_0.DITWSAuthInfo;
 import in.gov.incometaxindiaefiling.ws.ds.common.v_1_0.DITWSResponse;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,7 +20,6 @@ import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.crypto.MarshalException;

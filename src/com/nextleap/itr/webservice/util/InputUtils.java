@@ -18,12 +18,17 @@ public class InputUtils {
 		inputs.setErrorFilePath(System.getProperty(ITRConstants.ERROR_FILE_PATH));
 		inputs.setPanID(System.getProperty(ITRConstants.PAN_ID));
 		inputs.setTokenNumber(System.getProperty(ITRConstants.TOKEN_NUMBER));
+		inputs.setHardToken(new Boolean(System.getProperty(ITRConstants.IS_HARD_TOKEN)));
+		inputs.setHardTokenPin(System.getProperty(ITRConstants.HARD_TOKEN_PIN));
 	}
 	
 	public static boolean validateForITRSubmit(ItrInputs inputs) {
 		boolean validate = true;
 		if(!InputUtils.validateBasic(inputs) 
 				|| (inputs.getXmlZipFilePath()==null || inputs.getXmlZipFilePath().equals(""))
+				|| ((inputs.getXmlSignature() && !inputs.isHardToken()) 
+						&& (inputs.getXmlPfxFile()==null || inputs.getXmlPfxFile().equals("") 
+							|| inputs.getXmlPfxFilePassword()==null || inputs.getXmlPfxFilePassword().equals("")))
 				) {
 			validate = false;
 		} 
@@ -34,8 +39,9 @@ public class InputUtils {
 		boolean validate = true;
 		if((inputs.getEriUserId()==null || inputs.getEriUserId().equals(""))
 				|| (inputs.getEriPassowrd()==null || inputs.getEriPassowrd().equals(""))
-				|| (inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
-				|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))) {
+				|| ((!inputs.isHardToken() || inputs.getHardTokenPin()== null || inputs.getHardTokenPin().equals("")) 
+						&& ((inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
+								|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))))) {
 			validate = false;
 		}
 		return validate;

@@ -35,9 +35,17 @@ public interface ITRConstants {
 	
 	String PAN_ID = "panID";
 
-	public static final String SIGNED_XMLS_ZIP_FILE_NAME = "signedXmls.zip";
+	String SIGNED_XMLS_ZIP_FILE_NAME = "signedXmls.zip";
 	
-	public static final String DOM = "DOM";
+	String DOM = "DOM";
 
-	public static final String ITR_TAG = "ITR";
+	String ITR_TAG = "ITR";
+	
+	String CAC_INDIA = "CN=CCA India 2014,O=India PKI,C=IN";
+	
+	String IS_HARD_TOKEN = "hardToken";
+	
+	String HARD_TOKEN_PIN = "hardTokenPin";
+	
+	String PKCS11 = "PKCS11";
 }

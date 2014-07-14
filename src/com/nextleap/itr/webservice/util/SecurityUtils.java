@@ -9,9 +9,12 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.ProviderException;
+import java.security.Security;
 import java.security.Signature;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.security.cert.CertPath;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -51,14 +54,27 @@ import org.xml.sax.SAXException;
 import com.nextleap.itr.webservice.beans.ItrInputs;
 import com.nextleap.itr.webservice.constants.ITRConstants;
 
+/**
+ * @author rajeev
+ *
+ */
 public class SecurityUtils {
 	
 	public static class PrivateKeyAndCertChain {
-		public PrivateKeyEntry mPrivateKeyEntry;
+		public Certificate[] certChain;
+		public PrivateKey privateKey;
 	 	public Certificate certificate;
 	 }
 	
-	public static KeyStore loadKeyStoreFromPFXFile(String aFileName, String aKeyStorePasswd) 
+	/**
+	 * Loads a PKCS12 KeyStore from a PFX file.
+	 * @param aFileName
+	 * @param aKeyStorePasswd
+	 * @return
+	 * @throws GeneralSecurityException
+	 * @throws IOException
+	 */
+	private static KeyStore loadKeyStoreFromPFXFile(String aFileName, String aKeyStorePasswd) 
 			throws GeneralSecurityException, IOException {	
 		KeyStore keyStore = KeyStore.getInstance(ITRConstants.PKCS12_KEYSTORE_TYPE);
 		FileInputStream keyStoreStream = new FileInputStream(aFileName);
@@ -66,26 +82,58 @@ public class SecurityUtils {
 		keyStore.load(keyStoreStream, password);
 		return keyStore;
 	}
+	
+	/**
+	 * Loads a PKCS11 KeyStore from a Hard Token.  
+	 * @param hardTokenPin
+	 * @return
+	 * @throws IOException
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws GeneralSecurityException
+	 */
+	private static KeyStore loadKeyStoreFromHardToken(String hardTokenPin) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, Exception {
+		String configName = "c:\\Source Code\\itr\\pkcs11.properties.txt";
+		KeyStore keyStore = null;
+        try {
+			Provider p = new sun.security.pkcs11.SunPKCS11(configName);
+	        Security.addProvider(p);
+	        keyStore = KeyStore.getInstance(ITRConstants.PKCS11);
+			keyStore.load(null, hardTokenPin.toCharArray());
+        } catch (ProviderException exception) {
+        	throw new Exception("No Hard Token found");
+        }		
+		return keyStore;
+	}
 
+	/**
+	 * Gets Certificate, PrivateKey and CertificateChain from a KeyStore. 
+	 * @param aKeyStore
+	 * @param aKeyPassword
+	 * @return
+	 * @throws GeneralSecurityException
+	 */
 	public static PrivateKeyAndCertChain getPrivateKeyAndCertChain(KeyStore aKeyStore, String aKeyPassword)
  			throws GeneralSecurityException {
-		char[] password = aKeyPassword.toCharArray();
- 		Enumeration<String> aliasesEnum = aKeyStore.aliases();
- 		if (aliasesEnum.hasMoreElements()) {
- 			String alias = (String) aliasesEnum.nextElement();
- 			/*Certificate[] certificationChain = aKeyStore
- 					.getCertificateChain(alias);*/
- 			Certificate certificate509 = aKeyStore.getCertificate(alias);
- 
- 			KeyStore.PrivateKeyEntry entry = (PrivateKeyEntry) aKeyStore.getEntry(alias, new KeyStore.PasswordProtection(password));
- 			PrivateKeyAndCertChain result = new PrivateKeyAndCertChain();
- 			result.mPrivateKeyEntry = entry;	
- 			/*result.mCertificationChain = certificationChain;*/
- 			result.certificate = certificate509;
- 			return result;
+		PrivateKeyAndCertChain result = new PrivateKeyAndCertChain();
+		if (aKeyStore != null) {
+			Enumeration<String> aliasesEnum = aKeyStore.aliases();
+	 		/*result.certChain = new Certificate[aKeyStore.size()];*/
+	 		int index = 0;
+	  		while (aliasesEnum.hasMoreElements()) {
+	 			String alias = (String) aliasesEnum.nextElement();
+	 			Certificate certificate509 = aKeyStore.getCertificate(alias);
+	 			result.certChain = aKeyStore.getCertificateChain(alias);
+	 			if (!((X509Certificate)certificate509).getIssuerX500Principal().getName().equals(ITRConstants.CAC_INDIA)) {
+	 				result.privateKey = (PrivateKey) aKeyStore.getKey(alias, aKeyPassword.toCharArray());
+	 				result.certificate = certificate509;
+	 			}
+	 		} 
  		} else {
- 			throw new KeyStoreException("The keystore is empty!");
- 		}
+			throw new KeyStoreException("The keystore is empty!");
+		}
+ 		return result;
  	}
 
 
@@ -97,13 +145,19 @@ public class SecurityUtils {
 			throws CertificateException {
 		List<? extends Certificate> certList = Arrays.asList(aCertificationChain);
 		CertificateFactory certFactory =
-        CertificateFactory.getInstance(ITRConstants.X509_CERTIFICATE_TYPE);
+				CertificateFactory.getInstance(ITRConstants.X509_CERTIFICATE_TYPE);
 		CertPath certPath = certFactory.generateCertPath(certList);
 		byte[] certPathEncoded = certPath.getEncoded(ITRConstants.CERT_CHAIN_ENCODING);
 		String base64encodedCertChain = Base64.encode(certPathEncoded);
 		return base64encodedCertChain;
 }
 
+	/**
+	 * @param aPrivateKey
+	 * @return
+	 * @throws GeneralSecurityException
+	 * @throws IOException
+	 */
 	public static String signature(PrivateKey aPrivateKey) 
 			throws GeneralSecurityException, IOException {		
 		Signature signatureAlgorithm = Signature.getInstance(ITRConstants.DIGITAL_SIGNATURE_ALGORITHM_NAME);
@@ -120,23 +174,45 @@ public class SecurityUtils {
 	 * @throws IOException 
 	 * @throws GeneralSecurityException 
 	 */
-	public static DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException {
+	public static DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
 		DITWSAuthInfo authInfo =  new DITWSAuthInfo();
 		authInfo.setUserID(input.getEriUserId());
 		authInfo.setPassword(input.getEriPassowrd());
 		
-		KeyStore ks = loadKeyStoreFromPFXFile(input.getEriPfxFilePath(), input.getEriPfxFilePassword());
-		PrivateKeyAndCertChain pkcc = getPrivateKeyAndCertChain(ks, input.getEriPfxFilePassword());
-		String cc = encodeX509CertChainToBase64(pkcc.mPrivateKeyEntry.getCertificateChain());
-		String signature = signature(pkcc.mPrivateKeyEntry.getPrivateKey());
+		KeyStore ks = null;
+		String password = "";
+		if(input.isHardToken()) {
+			ks = loadKeyStoreFromHardToken(input.getHardTokenPin());
+			password = input.getHardTokenPin();
+		}
+		else { 
+			ks = loadKeyStoreFromPFXFile(input.getEriPfxFilePath(), input.getEriPfxFilePassword());
+			password = input.getEriPfxFilePassword();
+		}
+		PrivateKeyAndCertChain pkcc = getPrivateKeyAndCertChain(ks, password);
+		String cc = encodeX509CertChainToBase64(pkcc.certChain);
+		String signature = signature(pkcc.privateKey);
 		authInfo.setCertChain(cc);
 		authInfo.setSignature(signature);
 		return authInfo;
 	}
 	
+	/**
+	 * @param inputs
+	 * @param fileInputStream
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws GeneralSecurityException
+	 * @throws MarshalException
+	 * @throws XMLSignatureException
+	 * @throws TransformerException
+	 */
 	public static Document signXml(ItrInputs inputs, InputStream fileInputStream) 
 			throws FileNotFoundException, SAXException, IOException, ParserConfigurationException, 
-			GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException {
+			GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException, Exception {
 		// First, create the DOM XMLSignatureFactory that will be used to
         // generate the XMLSignature
         XMLSignatureFactory signatureFactory = XMLSignatureFactory.getInstance(ITRConstants.DOM);
@@ -163,12 +239,19 @@ public class SecurityUtils {
             signatureFactory.newSignatureMethod(SignatureMethod.RSA_SHA1, null),
             Collections.singletonList(ref));
         
-        KeyStore keyStore = loadKeyStoreFromPFXFile(inputs.getXmlPfxFile(), inputs.getXmlPfxFilePassword());
-        PrivateKeyAndCertChain keyAndCertChain = getPrivateKeyAndCertChain(keyStore, inputs.getXmlPfxFilePassword());
+        KeyStore keyStore = null;
+        PrivateKeyAndCertChain keyAndCertChain = null;
+        if(inputs.isHardToken()) {
+        	keyStore = loadKeyStoreFromHardToken(inputs.getHardTokenPin());
+        	keyAndCertChain = getPrivateKeyAndCertChain(keyStore, inputs.getHardTokenPin());
+        } else {
+        	keyStore = loadKeyStoreFromPFXFile(inputs.getXmlPfxFile(), inputs.getXmlPfxFilePassword());
+        	keyAndCertChain = getPrivateKeyAndCertChain(keyStore, inputs.getXmlPfxFilePassword());
+        }        
         
         // Create the KeyInfo containing the X509Data.
         KeyInfoFactory keyInfoFactory = signatureFactory.getKeyInfoFactory();
-        List<Object> x509Content = new ArrayList<Object>();
+        List<Object> x509Content = new ArrayList<Object>(2);
         x509Content.add(((X509Certificate)(keyAndCertChain.certificate)).getSubjectX500Principal().getName());
         x509Content.add(keyAndCertChain.certificate);
         X509Data x509Data = keyInfoFactory.newX509Data(x509Content);
@@ -180,18 +263,30 @@ public class SecurityUtils {
         
         // Create a DOMSignContext and specify the RSA PrivateKey and
         // location of the resulting XMLSignature's parent element.
-        DOMSignContext domSignContext = new DOMSignContext
-         (keyAndCertChain.mPrivateKeyEntry.getPrivateKey(), xmlDocument);
+        DOMSignContext domSignContext = new DOMSignContext(keyAndCertChain.privateKey, xmlDocument);
      
         // Marshal, generate, and sign the enveloped signature.
         signature.sign(domSignContext);
-        
-        /*OutputStream os = new FileOutputStream("E:\\WSDL\\signedI2_1106.xml");
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer trans = tf.newTransformer();
-        trans.transform(new DOMSource(xmlDocument), new StreamResult(os));*/
         return xmlDocument;
-        
+	}
+	
+	public static void main(String[] args) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, Exception {
+		/*loadKeyStoreFromHardToken("0000");*/
+		KeyStore keyStore = loadKeyStoreFromPFXFile("c:\\WSDL\\yogesh.pfx", "smart");
+		PrivateKeyAndCertChain andCertChain = getPrivateKeyAndCertChain(keyStore, "smart");
+		System.out.println(andCertChain.certificate.getType());
+		System.out.println(andCertChain.certificate.toString());
+		System.out.println(andCertChain.privateKey.getAlgorithm());
+		System.out.println(andCertChain.privateKey.getFormat());
+		System.out.println(signature(andCertChain.privateKey));
+		
+		KeyStore keyStore1 = loadKeyStoreFromHardToken("0000");
+		PrivateKeyAndCertChain andCertChain1 = getPrivateKeyAndCertChain(keyStore1, "0000");
+		System.out.println(andCertChain1.certificate.getType());
+		System.out.println(andCertChain1.certificate.toString());
+		System.out.println(andCertChain1.privateKey.getAlgorithm());
+		System.out.println(andCertChain1.privateKey.getFormat());
+		System.out.println(signature(andCertChain1.privateKey));
 	}
 }
 

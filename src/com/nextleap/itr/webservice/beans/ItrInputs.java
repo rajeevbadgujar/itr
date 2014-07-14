@@ -14,6 +14,8 @@ public class ItrInputs {
 	private String errorFilePath;
 	private String tokenNumber;
 	private String panID;
+	private boolean hardToken;
+	private String hardTokenPin;
 
 	public String getEriUserId() {
 		return eriUserId;
@@ -121,6 +123,23 @@ public class ItrInputs {
 				+ xmlPfxFile + ", xmlPfxFilePassword=" + xmlPfxFilePassword
 				+ ", responseFilePath=" + responseFilePath + ", errorFilePath="
 				+ errorFilePath + ", tokenNumber=" + tokenNumber + ", panID="
-				+ panID + "]";
+				+ panID + ", isHardToken=" + hardToken + ", hardTokenPin="
+				+ hardTokenPin + "]";
+	}
+
+	public boolean isHardToken() {
+		return hardToken;
+	}
+
+	public void setHardToken(boolean hardToken) {
+		this.hardToken = hardToken;
+	}
+
+	public String getHardTokenPin() {
+		return hardTokenPin;
+	}
+
+	public void setHardTokenPin(String hardTokenPin) {
+		this.hardTokenPin = hardTokenPin;
 	}
 }
