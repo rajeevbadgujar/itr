@@ -58,6 +58,8 @@ import org.apache.axis.encoding.Base64;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
+import sun.security.pkcs11.wrapper.PKCS11;
 import sun.security.util.PropertyExpander;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
@@ -69,6 +71,7 @@ import com.nextleap.itr.webservice.constants.ITRConstants;
  */
 public class SecurityUtils {
 	
+	public static final long  CKF_OS_LOCKING_OK                  = 0x00000002L;
 	public static class PrivateKeyAndCertChain {
 		public Certificate[] certChain;
 		public PrivateKey privateKey;
@@ -105,24 +108,35 @@ public class SecurityUtils {
 	private static KeyStore loadKeyStoreFromHardToken(String hardTokenPin) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, Exception {
 		KeyStore keyStore = null;
 		File f = null;
+		FileWriter writer = null;
         try {
         	
         	URL l = SecurityUtils.class.getClassLoader().getResource("com\\nextleap\\itr\\webservice\\util\\IDPrimePKCS11.dll");
+        	CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
+              initArgs.flags = CKF_OS_LOCKING_OK;
+        	  
+        	final PKCS11 tmpPKCS11 = PKCS11.getInstance(
+        			 URLDecoder.decode(l.getFile().substring(1)), "C_GetFunctionList", initArgs,
+                    false);
+        	 long [] slots = tmpPKCS11.C_GetSlotList(true);
+        	if(slots !=null && slots.length>0){
         	f=  new File("temp.properties");
-        	FileWriter writer = new FileWriter(f);
-        	writer.write("name = pkcs\nslot = 0\nlibrary="+URLDecoder.decode(l.getFile().substring(1)));
+        	writer= new FileWriter(f);
+        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+URLDecoder.decode(l.getFile().substring(1)));
         	writer.flush();
-        	writer.close();
         	FileInputStream fs = new FileInputStream(f);
         	Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
-        	
 	        Security.addProvider(prov);
 	        keyStore = KeyStore.getInstance(ITRConstants.PKCS11);
 			keyStore.load(null, hardTokenPin.toCharArray());
-			
+        	}else{
+        		throw new Exception("Not Able to read the Hardware token..Check if it is properly plugged in.");
+        	}
         } catch (ProviderException exception) {
         	throw new Exception("No Hard Token found");
         }finally{
+        	if(writer!=null)
+        		writer.close();
         	if(f!=null)
         		f.delete();
         }
@@ -202,14 +216,15 @@ public class SecurityUtils {
 		
 		KeyStore ks = null;
 		String password = "";
-		if(input.isHardToken()) {
-			ks = loadKeyStoreFromHardToken(input.getHardTokenPin());
-			password = input.getHardTokenPin();
-		}
-		else { 
+		// TODO meed this in future when we support auth using hard token
+//		if(input.isHardToken()) {
+//			ks = loadKeyStoreFromHardToken(input.getHardTokenPin());
+//			password = input.getHardTokenPin();
+//		}
+//		else { 
 			ks = loadKeyStoreFromPFXFile(input.getEriPfxFilePath(), input.getEriPfxFilePassword());
 			password = input.getEriPfxFilePassword();
-		}
+//		}
 		PrivateKeyAndCertChain pkcc = getPrivateKeyAndCertChain(ks, password);
 		String cc = encodeX509CertChainToBase64(pkcc.certChain);
 		String signature = signature(pkcc.privateKey);
