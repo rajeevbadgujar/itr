@@ -37,7 +37,7 @@ public class StatusITRVService {
 			}
 			
 			fileUtils = new FileUtils();	
-			DITWSAuthInfo authInfo = SecurityUtils.populateAuthInfo(inputs);
+			DITWSAuthInfo authInfo = new SecurityUtils().populateAuthInfo(inputs);
 		
 			ITRVService obj = new ITRVService();
 			ITRVServicePortType servicePort = obj.getITRVServicePort();

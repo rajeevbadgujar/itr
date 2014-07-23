@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -69,7 +70,7 @@ public class SubmitITRService {
 				while(zipEntries.hasMoreElements()) {
 					ZipEntry entry = zipEntries.nextElement();
 					InputStream fileInputStream = zipFile.getInputStream(entry);
-					Document signedXmlDocument = SecurityUtils.signXml(inputs, fileInputStream);
+					Document signedXmlDocument = new SecurityUtils().signXml(inputs, fileInputStream);
 					outputStream.putNextEntry(new ZipEntry(entry.getName()));
 					TransformerFactory transformerFactory = TransformerFactory.newInstance();
 					Transformer transformer = transformerFactory.newTransformer();
@@ -81,9 +82,10 @@ public class SubmitITRService {
 			}
 			
 			byte[] fileContent = FileUtils.readFromFileBytes(itrXmlZipFileName);
-			DITWSAuthInfo authInfo = SecurityUtils.populateAuthInfo(inputs);
-			
-			ITRService obj = new ITRService();
+			DITWSAuthInfo authInfo = new SecurityUtils().populateAuthInfo(inputs);
+			ClassLoader cl = ClassLoader.getSystemClassLoader();
+			URL wsdlLocation = cl.getResource("com/nextleap/itr/webservice/submitITR.wsdl");
+			ITRService obj = new ITRService(wsdlLocation);
 			ITRServicePort servicePort = obj.getITRServiceSoapHttpPort();
 	      
 			DITWSResponse submitITR = servicePort.submitITR(authInfo, fileContent);

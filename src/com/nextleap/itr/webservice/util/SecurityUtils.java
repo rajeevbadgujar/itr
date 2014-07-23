@@ -71,8 +71,9 @@ import com.nextleap.itr.webservice.constants.ITRConstants;
  */
 public class SecurityUtils {
 	
-	public static final long  CKF_OS_LOCKING_OK                  = 0x00000002L;
-	public static class PrivateKeyAndCertChain {
+	public   final long  CKF_OS_LOCKING_OK                  = 0x00000002L;
+	
+		public   class PrivateKeyAndCertChain {
 		public Certificate[] certChain;
 		public PrivateKey privateKey;
 	 	public Certificate certificate;
@@ -86,7 +87,7 @@ public class SecurityUtils {
 	 * @throws GeneralSecurityException
 	 * @throws IOException
 	 */
-	private static KeyStore loadKeyStoreFromPFXFile(String aFileName, String aKeyStorePasswd) 
+	private   KeyStore loadKeyStoreFromPFXFile(String aFileName, String aKeyStorePasswd) 
 			throws GeneralSecurityException, IOException {	
 		KeyStore keyStore = KeyStore.getInstance(ITRConstants.PKCS12_KEYSTORE_TYPE);
 		FileInputStream keyStoreStream = new FileInputStream(aFileName);
@@ -105,13 +106,15 @@ public class SecurityUtils {
 	 * @throws NoSuchAlgorithmException 
 	 * @throws GeneralSecurityException
 	 */
-	private static KeyStore loadKeyStoreFromHardToken(String hardTokenPin) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, Exception {
+	private  KeyStore loadKeyStoreFromHardToken(String hardTokenPin) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, Exception {
 		KeyStore keyStore = null;
 		File f = null;
 		FileWriter writer = null;
         try {
+        	System.out.println(this.getClass().getResource("IDPrimePKCS11.dll").getPath());
         	
-        	URL l = SecurityUtils.class.getClassLoader().getResource("com\\nextleap\\itr\\webservice\\util\\IDPrimePKCS11.dll");
+        	URL l = this.getClass().getResource("IDPrimePKCS11.dll");
+        	System.out.println(URLDecoder.decode(l.getFile().substring(6)));
         	CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
               initArgs.flags = CKF_OS_LOCKING_OK;
         	  
@@ -122,13 +125,14 @@ public class SecurityUtils {
         	if(slots !=null && slots.length>0){
         	f=  new File("temp.properties");
         	writer= new FileWriter(f);
-        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+URLDecoder.decode(l.getFile().substring(1)));
+        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+URLDecoder.decode(l.getFile().substring(6)));
         	writer.flush();
         	FileInputStream fs = new FileInputStream(f);
         	Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
 	        Security.addProvider(prov);
 	        keyStore = KeyStore.getInstance(ITRConstants.PKCS11);
 			keyStore.load(null, hardTokenPin.toCharArray());
+			System.out.println("KeyStore loaded");
         	}else{
         		throw new Exception("Not Able to read the Hardware token..Check if it is properly plugged in.");
         	}
@@ -150,7 +154,7 @@ public class SecurityUtils {
 	 * @return
 	 * @throws GeneralSecurityException
 	 */
-	public static PrivateKeyAndCertChain getPrivateKeyAndCertChain(KeyStore aKeyStore, String aKeyPassword)
+	public   PrivateKeyAndCertChain getPrivateKeyAndCertChain(KeyStore aKeyStore, String aKeyPassword)
  			throws GeneralSecurityException {
 		PrivateKeyAndCertChain result = new PrivateKeyAndCertChain();
 		if (aKeyStore != null) {
@@ -176,7 +180,7 @@ public class SecurityUtils {
 	 * @return Base64-encoded ASN.1 DER representation of given X.509 certification
 	 * chain.
 	 */
-	public static String encodeX509CertChainToBase64(Certificate[] aCertificationChain) 
+	public   String encodeX509CertChainToBase64(Certificate[] aCertificationChain) 
 			throws CertificateException {
 		List<? extends Certificate> certList = Arrays.asList(aCertificationChain);
 		CertificateFactory certFactory =
@@ -193,7 +197,7 @@ public class SecurityUtils {
 	 * @throws GeneralSecurityException
 	 * @throws IOException
 	 */
-	public static String signature(PrivateKey aPrivateKey) 
+	public   String signature(PrivateKey aPrivateKey) 
 			throws GeneralSecurityException, IOException {		
 		Signature signatureAlgorithm = Signature.getInstance(ITRConstants.DIGITAL_SIGNATURE_ALGORITHM_NAME);
 		signatureAlgorithm.initSign(aPrivateKey);
@@ -209,7 +213,7 @@ public class SecurityUtils {
 	 * @throws IOException 
 	 * @throws GeneralSecurityException 
 	 */
-	public static DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
+	public   DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
 		DITWSAuthInfo authInfo =  new DITWSAuthInfo();
 		authInfo.setUserID(input.getEriUserId());
 		authInfo.setPassword(input.getEriPassowrd());
@@ -246,7 +250,7 @@ public class SecurityUtils {
 	 * @throws XMLSignatureException
 	 * @throws TransformerException
 	 */
-	public static Document signXml(ItrInputs inputs, InputStream fileInputStream) 
+	public   Document signXml(ItrInputs inputs, InputStream fileInputStream) 
 			throws FileNotFoundException, SAXException, IOException, ParserConfigurationException, 
 			GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException, Exception {
 		// First, create the DOM XMLSignatureFactory that will be used to
@@ -306,7 +310,7 @@ public class SecurityUtils {
         return xmlDocument;
 	}
 	
-	public static void main(String[] args) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, Exception {
+	public static   void main(String[] args) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, Exception {
 		/*loadKeyStoreFromHardToken("0000");*/
 //		KeyStore keyStore = loadKeyStoreFromPFXFile("c:\\WSDL\\yogesh.pfx", "smart");
 //		PrivateKeyAndCertChain andCertChain = getPrivateKeyAndCertChain(keyStore, "smart");
@@ -315,14 +319,14 @@ public class SecurityUtils {
 //		System.out.println(andCertChain.privateKey.getAlgorithm());
 //		System.out.println(andCertChain.privateKey.getFormat());
 //		System.out.println(signature(andCertChain.privateKey));
-		
-		KeyStore keyStore1 = loadKeyStoreFromHardToken("0000");
-		PrivateKeyAndCertChain andCertChain1 = getPrivateKeyAndCertChain(keyStore1, "0000");
+		SecurityUtils r =  new SecurityUtils();
+		KeyStore keyStore1 = r.loadKeyStoreFromHardToken("0000");
+		PrivateKeyAndCertChain andCertChain1 = r.getPrivateKeyAndCertChain(keyStore1, "0000");
 		System.out.println(andCertChain1.certificate.getType());
 		System.out.println(andCertChain1.certificate.toString());
 		System.out.println(andCertChain1.privateKey.getAlgorithm());
 		System.out.println(andCertChain1.privateKey.getFormat());
-		System.out.println(signature(andCertChain1.privateKey));
+		System.out.println(r.signature(andCertChain1.privateKey));
 	}
 	
 		
