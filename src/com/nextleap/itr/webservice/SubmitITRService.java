@@ -96,17 +96,21 @@ public class SubmitITRService {
 				| ITRInvalidDocFaultException | ITRServiceFaultException e) {
 			error = e.getMessage();
 			result = false;
+			e.printStackTrace();
 		} catch (FileNotFoundException | SAXException | ParserConfigurationException 
 				| GeneralSecurityException | MarshalException | XMLSignatureException 
 				| TransformerException e) {
 			error = e.getMessage();
 			result = false;
+			e.printStackTrace();
 		} catch (IOException e) {
 			error = e.getMessage();
 			result = false;
+			e.printStackTrace();
 		} catch (Exception e) {
 			error = e.getMessage();
 			result = false;
+			e.printStackTrace();
 		} finally {
 			if(!error.isEmpty())
 				fileUtils.write(inputs.getErrorFilePath(), error);

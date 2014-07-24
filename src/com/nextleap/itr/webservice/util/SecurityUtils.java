@@ -9,8 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.security.GeneralSecurityException;
@@ -32,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
 
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
@@ -61,7 +58,6 @@ import org.xml.sax.SAXException;
 
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.PKCS11;
-import sun.security.util.PropertyExpander;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
 import com.nextleap.itr.webservice.constants.ITRConstants;
@@ -112,17 +108,13 @@ public class SecurityUtils {
 		File f = null;
 		FileWriter writer = null;
         try {
-        	System.out.println(this.getClass().getResource("IDPrimePKCS11.dll").getPath());
-        	
-        	URL l = this.getClass().getResource("IDPrimePKCS11.dll");
-        	System.out.println(URLDecoder.decode(l.getFile().substring(6)));
+        	URL l = new URL("file:///" + "c:/itr/lib/IDPrimePKCS11.dll");
         	CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
             initArgs.flags = CKF_OS_LOCKING_OK;
             PKCS11 tmpPKCS11 = null;
         	if (l != null) {
         		tmpPKCS11 = PKCS11.getInstance(
-        			 URLDecoder.decode(l.getFile().substring(1)), "C_GetFunctionList", initArgs,
-                    false);
+        				new File(l.toURI()).getCanonicalPath(), "C_GetFunctionList", initArgs, false);
         	} else {
         		throw new MalformedURLException("com\\nextleap\\itr\\webservice\\util\\IDPrimePKCS11.dll not found");
         	}
@@ -130,7 +122,7 @@ public class SecurityUtils {
         	if(slots !=null && slots.length>0){
 	        	f=  new File("temp.properties");
 	        	writer= new FileWriter(f);
-	        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+URLDecoder.decode(l.getFile().substring(1)));
+	        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+new File(l.toURI()).getCanonicalPath());
 	        	writer.flush();
 	        	FileInputStream fs = new FileInputStream(f);
 	        	Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
@@ -312,27 +304,6 @@ public class SecurityUtils {
         // Marshal, generate, and sign the enveloped signature.
         signature.sign(domSignContext);
         return xmlDocument;
-	}
-	
-	public static   void main(String[] args) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, Exception {
-		/*loadKeyStoreFromHardToken("0000");*/
-//		KeyStore keyStore = loadKeyStoreFromPFXFile("c:\\WSDL\\yogesh.pfx", "smart");
-//		PrivateKeyAndCertChain andCertChain = getPrivateKeyAndCertChain(keyStore, "smart");
-//		System.out.println(andCertChain.certificate.getType());
-//		System.out.println(andCertChain.certificate.toString());
-//		System.out.println(andCertChain.privateKey.getAlgorithm());
-//		System.out.println(andCertChain.privateKey.getFormat());
-//		System.out.println(signature(andCertChain.privateKey));
-		SecurityUtils r =  new SecurityUtils();
-		KeyStore keyStore1 = r.loadKeyStoreFromHardToken("0000");
-		PrivateKeyAndCertChain andCertChain1 = r.getPrivateKeyAndCertChain(keyStore1, "0000");
-		System.out.println(andCertChain1.certificate.getType());
-		System.out.println(andCertChain1.certificate.toString());
-		System.out.println(andCertChain1.privateKey.getAlgorithm());
-		System.out.println(andCertChain1.privateKey.getFormat());
-		System.out.println(r.signature(andCertChain1.privateKey));
-	}
-	
-		
+	}	
 }
 
