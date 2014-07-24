@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -116,24 +117,27 @@ public class SecurityUtils {
         	URL l = this.getClass().getResource("IDPrimePKCS11.dll");
         	System.out.println(URLDecoder.decode(l.getFile().substring(6)));
         	CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
-              initArgs.flags = CKF_OS_LOCKING_OK;
-        	  
-        	final PKCS11 tmpPKCS11 = PKCS11.getInstance(
+            initArgs.flags = CKF_OS_LOCKING_OK;
+            PKCS11 tmpPKCS11 = null;
+        	if (l != null) {
+        		tmpPKCS11 = PKCS11.getInstance(
         			 URLDecoder.decode(l.getFile().substring(1)), "C_GetFunctionList", initArgs,
                     false);
-        	 long [] slots = tmpPKCS11.C_GetSlotList(true);
+        	} else {
+        		throw new MalformedURLException("com\\nextleap\\itr\\webservice\\util\\IDPrimePKCS11.dll not found");
+        	}
+        	long [] slots = tmpPKCS11.C_GetSlotList(true);
         	if(slots !=null && slots.length>0){
-        	f=  new File("temp.properties");
-        	writer= new FileWriter(f);
-        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+URLDecoder.decode(l.getFile().substring(6)));
-        	writer.flush();
-        	FileInputStream fs = new FileInputStream(f);
-        	Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
-	        Security.addProvider(prov);
-	        keyStore = KeyStore.getInstance(ITRConstants.PKCS11);
-			keyStore.load(null, hardTokenPin.toCharArray());
-			System.out.println("KeyStore loaded");
-        	}else{
+	        	f=  new File("temp.properties");
+	        	writer= new FileWriter(f);
+	        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+URLDecoder.decode(l.getFile().substring(1)));
+	        	writer.flush();
+	        	FileInputStream fs = new FileInputStream(f);
+	        	Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
+		        Security.addProvider(prov);
+		        keyStore = KeyStore.getInstance(ITRConstants.PKCS11);
+				keyStore.load(null, hardTokenPin.toCharArray());
+	        } else{
         		throw new Exception("Not Able to read the Hardware token..Check if it is properly plugged in.");
         	}
         } catch (ProviderException exception) {
