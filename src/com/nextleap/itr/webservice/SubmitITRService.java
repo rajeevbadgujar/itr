@@ -36,7 +36,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
-import com.nextleap.itr.webservice.constants.ITRConstants;
 import com.nextleap.itr.webservice.util.FileUtils;
 import com.nextleap.itr.webservice.util.InputUtils;
 import com.nextleap.itr.webservice.util.SecurityUtils;
@@ -62,7 +61,7 @@ public class SubmitITRService {
 			fileUtils = new FileUtils();
 			String itrXmlZipFileName = inputs.getXmlZipFilePath();
 			if(inputs.getXmlSignature()) {
-				itrXmlZipFileName = ITRConstants.SIGNED_XMLS_ZIP_FILE_NAME;
+				itrXmlZipFileName = itrXmlZipFileName.replace(".", "_signed.");
 				ZipFile zipFile = new ZipFile(new File(inputs.getXmlZipFilePath()));
 				Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
 				ZipOutputStream outputStream = new ZipOutputStream(
@@ -109,8 +108,8 @@ public class SubmitITRService {
 			error = e.getMessage();
 			result = false;
 		} finally {
-		
-        	fileUtils.write(inputs.getErrorFilePath(), error);
+			if(!error.isEmpty())
+				fileUtils.write(inputs.getErrorFilePath(), error);
         }
 		return result;
 	}

@@ -11,6 +11,7 @@ import in.gov.incometaxindiaefiling.ws.ds.itrv.v_1_0.ITRVByTokenNoRequest;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
@@ -38,8 +39,9 @@ public class StatusITRVService {
 			
 			fileUtils = new FileUtils();	
 			DITWSAuthInfo authInfo = new SecurityUtils().populateAuthInfo(inputs);
-		
-			ITRVService obj = new ITRVService();
+			ClassLoader cl = ClassLoader.getSystemClassLoader();
+			URL wsdlLocation = cl.getResource("com/nextleap/itr/webservice/getITRV.wsdl");
+			ITRVService obj = new ITRVService(wsdlLocation);
 			ITRVServicePortType servicePort = obj.getITRVServicePort();
 			
 			ITRVByTokenNoRequest itrvByTokenNoRequest = new ITRVByTokenNoRequest();
