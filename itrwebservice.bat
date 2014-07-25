@@ -119,7 +119,7 @@ if not "X%ITR_PASSWORD%"=="X" (
 	set JAVA_OPTS=%JAVA_OPTS% -DeriPassword=%ITR_PASSWORD% 
 )
 
-set JAVA_OPTS=%JAVA_OPTS% -DpfxFilePath=%PFX_FILEPATH% -DpfxFilePassword=%PFX_FILE_PASSWORD%  -DresponseFilePath="%RESPONSE_FILE_PATH%" -DerrorFilePath="%ERROR_FILE_PATH%" -Djava.awt.headless=true -Dsun.java2d.noddraw=true 
+set JAVA_OPTS=%JAVA_OPTS% -DpfxFilePath=%PFX_FILEPATH% -DpfxFilePassword=%PFX_FILE_PASSWORD%  -DresponseFilePath="%RESPONSE_FILE_PATH%" -DerrorFilePath="%ERROR_FILE_PATH%" -Djava.awt.headless=true -Dsun.java2d.noddraw=true -DinstallDir="%ITR_WEBSERVICE_INSTALL_DIR%"
 
 REM -- ##################### End JAVA_OPTS #########################
 GOTO NEXT

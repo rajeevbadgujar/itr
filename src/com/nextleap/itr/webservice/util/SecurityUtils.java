@@ -68,9 +68,9 @@ import com.nextleap.itr.webservice.constants.ITRConstants;
  */
 public class SecurityUtils {
 	
-	public   final long  CKF_OS_LOCKING_OK                  = 0x00000002L;
+	public static final long  CKF_OS_LOCKING_OK                  = 0x00000002L;
 	
-		public   class PrivateKeyAndCertChain {
+		public static class PrivateKeyAndCertChain {
 		public Certificate[] certChain;
 		public PrivateKey privateKey;
 	 	public Certificate certificate;
@@ -84,7 +84,7 @@ public class SecurityUtils {
 	 * @throws GeneralSecurityException
 	 * @throws IOException
 	 */
-	private   KeyStore loadKeyStoreFromPFXFile(String aFileName, String aKeyStorePasswd) 
+	private static KeyStore loadKeyStoreFromPFXFile(String aFileName, String aKeyStorePasswd) 
 			throws GeneralSecurityException, IOException {	
 		KeyStore keyStore = KeyStore.getInstance(ITRConstants.PKCS12_KEYSTORE_TYPE);
 		FileInputStream keyStoreStream = new FileInputStream(aFileName);
@@ -103,26 +103,23 @@ public class SecurityUtils {
 	 * @throws NoSuchAlgorithmException 
 	 * @throws GeneralSecurityException
 	 */
-	private  KeyStore loadKeyStoreFromHardToken(String hardTokenPin) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, Exception {
+	private static KeyStore loadKeyStoreFromHardToken(String hardTokenPin) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, Exception {
 		KeyStore keyStore = null;
 		File f = null;
 		FileWriter writer = null;
         try {
-        	URL l = new URL("file:///" + "c:/itr/lib/IDPrimePKCS11.dll");
+        	URL dllUrl = new URL("file:///" + InputUtils.installDir + ITRConstants.GAMALTO_32BIT_DLL);
+        	File dllFile = new File(dllUrl.toURI());
         	CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
             initArgs.flags = CKF_OS_LOCKING_OK;
             PKCS11 tmpPKCS11 = null;
-        	if (l != null) {
-        		tmpPKCS11 = PKCS11.getInstance(
-        				new File(l.toURI()).getCanonicalPath(), "C_GetFunctionList", initArgs, false);
-        	} else {
-        		throw new MalformedURLException("com\\nextleap\\itr\\webservice\\util\\IDPrimePKCS11.dll not found");
-        	}
+        	tmpPKCS11 = PKCS11.getInstance(
+					dllFile.getCanonicalPath(), "C_GetFunctionList", initArgs, false);
         	long [] slots = tmpPKCS11.C_GetSlotList(true);
         	if(slots !=null && slots.length>0){
 	        	f=  new File("temp.properties");
 	        	writer= new FileWriter(f);
-	        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+new File(l.toURI()).getCanonicalPath());
+	        	writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+dllFile.getCanonicalPath());
 	        	writer.flush();
 	        	FileInputStream fs = new FileInputStream(f);
 	        	Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
@@ -150,7 +147,7 @@ public class SecurityUtils {
 	 * @return
 	 * @throws GeneralSecurityException
 	 */
-	public   PrivateKeyAndCertChain getPrivateKeyAndCertChain(KeyStore aKeyStore, String aKeyPassword)
+	public static PrivateKeyAndCertChain getPrivateKeyAndCertChain(KeyStore aKeyStore, String aKeyPassword)
  			throws GeneralSecurityException {
 		PrivateKeyAndCertChain result = new PrivateKeyAndCertChain();
 		if (aKeyStore != null) {
@@ -176,7 +173,7 @@ public class SecurityUtils {
 	 * @return Base64-encoded ASN.1 DER representation of given X.509 certification
 	 * chain.
 	 */
-	public   String encodeX509CertChainToBase64(Certificate[] aCertificationChain) 
+	public static String encodeX509CertChainToBase64(Certificate[] aCertificationChain) 
 			throws CertificateException {
 		List<? extends Certificate> certList = Arrays.asList(aCertificationChain);
 		CertificateFactory certFactory =
@@ -193,7 +190,7 @@ public class SecurityUtils {
 	 * @throws GeneralSecurityException
 	 * @throws IOException
 	 */
-	public   String signature(PrivateKey aPrivateKey) 
+	public static String signature(PrivateKey aPrivateKey) 
 			throws GeneralSecurityException, IOException {		
 		Signature signatureAlgorithm = Signature.getInstance(ITRConstants.DIGITAL_SIGNATURE_ALGORITHM_NAME);
 		signatureAlgorithm.initSign(aPrivateKey);
@@ -209,7 +206,7 @@ public class SecurityUtils {
 	 * @throws IOException 
 	 * @throws GeneralSecurityException 
 	 */
-	public   DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
+	public static DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
 		DITWSAuthInfo authInfo =  new DITWSAuthInfo();
 		authInfo.setUserID(input.getEriUserId());
 		authInfo.setPassword(input.getEriPassowrd());
@@ -246,7 +243,7 @@ public class SecurityUtils {
 	 * @throws XMLSignatureException
 	 * @throws TransformerException
 	 */
-	public   Document signXml(ItrInputs inputs, InputStream fileInputStream) 
+	public static Document signXml(ItrInputs inputs, InputStream fileInputStream) 
 			throws FileNotFoundException, SAXException, IOException, ParserConfigurationException, 
 			GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException, Exception {
 		// First, create the DOM XMLSignatureFactory that will be used to

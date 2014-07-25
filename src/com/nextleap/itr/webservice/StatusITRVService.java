@@ -15,6 +15,7 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
+import com.nextleap.itr.webservice.constants.ITRConstants;
 import com.nextleap.itr.webservice.util.FileUtils;
 import com.nextleap.itr.webservice.util.InputUtils;
 import com.nextleap.itr.webservice.util.SecurityUtils;
@@ -38,9 +39,9 @@ public class StatusITRVService {
 			}
 			
 			fileUtils = new FileUtils();	
-			DITWSAuthInfo authInfo = new SecurityUtils().populateAuthInfo(inputs);
+			DITWSAuthInfo authInfo = SecurityUtils.populateAuthInfo(inputs);
 			ClassLoader cl = ClassLoader.getSystemClassLoader();
-			URL wsdlLocation = cl.getResource("com/nextleap/itr/webservice/getITRV.wsdl");
+			URL wsdlLocation = cl.getResource(ITRConstants.SUBMIT_ITR_WSDL);
 			ITRVService obj = new ITRVService(wsdlLocation);
 			ITRVServicePortType servicePort = obj.getITRVServicePort();
 			

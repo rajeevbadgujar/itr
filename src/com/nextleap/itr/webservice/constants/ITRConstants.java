@@ -48,4 +48,14 @@ public interface ITRConstants {
 	String HARD_TOKEN_PIN = "hardTokenPin";
 	
 	String PKCS11 = "PKCS11";
+	
+	String INSTALL_DIR = "installDir";
+	
+	String GAMALTO_32BIT_DLL = "/lib/IDPrimePKCS11.dll";
+	
+	String GAMALTO_64BIT_DLL = "/lib/IDPrimePKCS1164.dll";
+	
+	String SUBMIT_ITR_WSDL = "com/nextleap/itr/webservice/submitITR.wsdl";
+	
+	String STATUS_ITR_WSDL = "com/nextleap/itr/webservice/getITRV.wsdl";
 }

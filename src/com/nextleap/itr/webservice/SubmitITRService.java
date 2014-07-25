@@ -36,6 +36,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
+import com.nextleap.itr.webservice.constants.ITRConstants;
 import com.nextleap.itr.webservice.util.FileUtils;
 import com.nextleap.itr.webservice.util.InputUtils;
 import com.nextleap.itr.webservice.util.SecurityUtils;
@@ -69,7 +70,7 @@ public class SubmitITRService {
 				while(zipEntries.hasMoreElements()) {
 					ZipEntry entry = zipEntries.nextElement();
 					InputStream fileInputStream = zipFile.getInputStream(entry);
-					Document signedXmlDocument = new SecurityUtils().signXml(inputs, fileInputStream);
+					Document signedXmlDocument = SecurityUtils.signXml(inputs, fileInputStream);
 					outputStream.putNextEntry(new ZipEntry(entry.getName()));
 					TransformerFactory transformerFactory = TransformerFactory.newInstance();
 					Transformer transformer = transformerFactory.newTransformer();
@@ -81,9 +82,9 @@ public class SubmitITRService {
 			}
 			
 			byte[] fileContent = FileUtils.readFromFileBytes(itrXmlZipFileName);
-			DITWSAuthInfo authInfo = new SecurityUtils().populateAuthInfo(inputs);
+			DITWSAuthInfo authInfo = SecurityUtils.populateAuthInfo(inputs);
 			ClassLoader cl = ClassLoader.getSystemClassLoader();
-			URL wsdlLocation = cl.getResource("com/nextleap/itr/webservice/submitITR.wsdl");
+			URL wsdlLocation = cl.getResource(ITRConstants.SUBMIT_ITR_WSDL);
 			ITRService obj = new ITRService(wsdlLocation);
 			ITRServicePort servicePort = obj.getITRServiceSoapHttpPort();
 	      
@@ -96,21 +97,17 @@ public class SubmitITRService {
 				| ITRInvalidDocFaultException | ITRServiceFaultException e) {
 			error = e.getMessage();
 			result = false;
-			e.printStackTrace();
 		} catch (FileNotFoundException | SAXException | ParserConfigurationException 
 				| GeneralSecurityException | MarshalException | XMLSignatureException 
 				| TransformerException e) {
 			error = e.getMessage();
 			result = false;
-			e.printStackTrace();
 		} catch (IOException e) {
 			error = e.getMessage();
 			result = false;
-			e.printStackTrace();
 		} catch (Exception e) {
 			error = e.getMessage();
 			result = false;
-			e.printStackTrace();
 		} finally {
 			if(!error.isEmpty())
 				fileUtils.write(inputs.getErrorFilePath(), error);

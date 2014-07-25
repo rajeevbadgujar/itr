@@ -21,8 +21,7 @@ public class TestHardTokens {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
 		char[] password = {'0','0','0','0'};
 		keyStore.load(null, password);
-		
-		SecurityUtils.getPrivateKeyAndCertChain(keyStore, "0000");
+	
 	}
 
 }

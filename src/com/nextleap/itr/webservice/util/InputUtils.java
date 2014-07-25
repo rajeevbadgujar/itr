@@ -5,6 +5,8 @@ import com.nextleap.itr.webservice.constants.ITRConstants;
 
 public class InputUtils {
 
+	public static String installDir = "";
+	
 	public static void populateItrReturnInputs(ItrInputs inputs) {
 		inputs.setEriUserId(System.getProperty(ITRConstants.USER_ID));
 		inputs.setEriPassowrd(System.getProperty(ITRConstants.USER_PASSWORD));
@@ -20,6 +22,7 @@ public class InputUtils {
 		inputs.setTokenNumber(System.getProperty(ITRConstants.TOKEN_NUMBER));
 		inputs.setHardToken(new Boolean(System.getProperty(ITRConstants.IS_HARD_TOKEN)));
 		inputs.setHardTokenPin(System.getProperty(ITRConstants.HARD_TOKEN_PIN));
+		installDir = System.getProperty(ITRConstants.INSTALL_DIR);
 	}
 	
 	public static boolean validateForITRSubmit(ItrInputs inputs) {
