@@ -41,7 +41,7 @@ public class StatusITRVService {
 			fileUtils = new FileUtils();	
 			DITWSAuthInfo authInfo = SecurityUtils.populateAuthInfo(inputs);
 			ClassLoader cl = ClassLoader.getSystemClassLoader();
-			URL wsdlLocation = cl.getResource(ITRConstants.SUBMIT_ITR_WSDL);
+			URL wsdlLocation = cl.getResource(ITRConstants.STATUS_ITR_WSDL);
 			ITRVService obj = new ITRVService(wsdlLocation);
 			ITRVServicePortType servicePort = obj.getITRVServicePort();
 			

@@ -31,6 +31,11 @@ set ERROR_FILE_PATH=
 set ITR_WEBSERVICE_LOG_DIR=
 set TOKEN_NUMBER=
 set PAN_ID=
+set IS_XMLSIGNED=
+set IS_HARDTOKEN=
+set HARDTOKEN_PIN=
+set XML_PFX_FILEPATH=
+set XML_PFX_FILE_PASSWORD=
 
 
 REM -- Checking if the ITR_WEBSERVICE_CONFIG_FILE is set, else read the parameter after /c. If both are not set, come out with an error
@@ -93,6 +98,12 @@ FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findst
 FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "LOGDIR"') DO SET ITR_WEBSERVICE_LOG_DIR=%%B
 FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "TOKENNUMBER"') DO SET TOKEN_NUMBER=%%B
 FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "PANID"') DO SET PAN_ID=%%B
+FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "XMLSIGNATURE"') DO SET IS_XMLSIGNED=%%B
+FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "HARDTOKEN"') DO SET IS_HARDTOKEN=%%B
+FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "HARDTOKENPIN"') DO SET HARDTOKEN_PIN=%%B
+FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "XMLPFXFILEPATH"') DO SET XML_PFX_FILEPATH=%%B
+FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "XMLPFXFILEPASSWORD"') DO SET XML_PFX_FILE_PASSWORD=%%B
+
 
 if "X%ITR_WEBSERVICE_INSTALL_DIR%"=="X" (
 	echo "Invalid Configuration File"
@@ -128,7 +139,8 @@ REM -- ############## End of Reading Configuration File #######################
 :NEXT
 REM -- ############## execute the webservice #######################
 IF [%do_executeBulkItr%]==[1] ( 
-	set JAVA_OPTS_FOR_EXECUTE=%JAVA_OPTS% -DxmlZipFilePath="%XML_ZIP_FILE_PATH%"
+	set JAVA_OPTS_FOR_EXECUTE=%JAVA_OPTS% -DxmlPfxFilePath=%XML_PFX_FILEPATH% -DxmlPfxFilePassword=%XML_PFX_FILE_PASSWORD% -DxmlSignature=%IS_XMLSIGNED% -DhardToken=%IS_HARDTOKEN% -DhardTokenPin=%HARDTOKEN_PIN%  -DxmlZipFilePath="%XML_ZIP_FILE_PATH%"
+	echo %JAVA_OPTS_FOR_EXECUTE%
 	call  "%JRE_HOME%\bin\java" %JAVA_OPTS_FOR_EXECUTE% -cp "%ITR_WEBSERVICE_INSTALL_DIR%\lib\webservice_itr-1.0.jar";"%ITR_WEBSERVICE_INSTALL_DIR%\lib\axis-1.4.jar" com.nextleap.itr.webservice.ITRWebService itrWeb!123 >>"%ITR_WEBSERVICE_LOG_DIR%"\monitorWebService.log 2>&1
 	echo Done.
 	GOTO END
@@ -137,6 +149,7 @@ IF [%do_executeBulkItr%]==[1] (
 REM -- ############## status of the webservice #######################
 IF [%do_bulkItrStatus%]==[1] ( 
 	set JAVA_OPTS_FOR_STATUS=%JAVA_OPTS% -DpanID="%PAN_ID%" -DtokenNumber="%TOKEN_NUMBER%"
+	echo %JAVA_OPTS_FOR_STATUS%
 	call "%JRE_HOME%\bin\java" %JAVA_OPTS_FOR_STATUS% -cp "%ITR_WEBSERVICE_INSTALL_DIR%\lib\webservice_itr-1.0.jar";"%ITR_WEBSERVICE_INSTALL_DIR%\lib\axis-1.4.jar" com.nextleap.itr.webservice.ITRVStatusService itrWeb!123 >>"%ITR_WEBSERVICE_LOG_DIR%"\monitorWebService.log 2>&1
 	echo Done.
 	GOTO END

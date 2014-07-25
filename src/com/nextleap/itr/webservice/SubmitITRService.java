@@ -55,7 +55,7 @@ public class SubmitITRService {
 		try{				
 			InputUtils.populateItrReturnInputs(inputs);
 			if(!InputUtils.validateForITRSubmit(inputs)) {
-				System.out.println("Please provide required inputs.");
+				System.out.println("Please provide required inputs." + inputs.toString());
 				System.exit(1);
 			}
 			
