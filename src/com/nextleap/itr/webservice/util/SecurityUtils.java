@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -108,8 +109,8 @@ public class SecurityUtils {
 		File f = null;
 		FileWriter writer = null;
         try {
-        	URL dllUrl = new URL("file:///" + InputUtils.installDir + ITRConstants.GAMALTO_32BIT_DLL);
-        	File dllFile = new File(dllUrl.toURI());
+        	URL dllUrl = new URL("file:///" + URLEncoder.encode("c:\\Source Code\\itr") + ITRConstants.GAMALTO_32BIT_DLL);
+        	File dllFile = new File(URLDecoder.decode(dllUrl.getPath()));
         	CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
             initArgs.flags = CKF_OS_LOCKING_OK;
             PKCS11 tmpPKCS11 = null;
@@ -301,6 +302,6 @@ public class SecurityUtils {
         // Marshal, generate, and sign the enveloped signature.
         signature.sign(domSignContext);
         return xmlDocument;
-	}	
+	}
 }
 
