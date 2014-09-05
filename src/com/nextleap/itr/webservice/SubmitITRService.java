@@ -103,9 +103,11 @@ public class SubmitITRService {
 			error = e.getMessage();
 			result = false;
 		} catch (IOException e) {
+			e.printStackTrace();
 			error = e.getMessage();
 			result = false;
 		} catch (Exception e) {
+			e.printStackTrace();
 			error = e.getMessage();
 			result = false;
 		} finally {

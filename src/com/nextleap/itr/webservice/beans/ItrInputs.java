@@ -16,6 +16,15 @@ public class ItrInputs {
 	private String panID;
 	private boolean hardToken;
 	private String hardTokenPin;
+	private String hardTokenType;
+
+	public String getHardTokenType() {
+		return hardTokenType;
+	}
+
+	public void setHardTokenType(String hardTokenType) {
+		this.hardTokenType = hardTokenType;
+	}
 
 	public String getEriUserId() {
 		return eriUserId;

@@ -22,6 +22,7 @@ public class InputUtils {
 		inputs.setTokenNumber(System.getProperty(ITRConstants.TOKEN_NUMBER));
 		inputs.setHardToken(new Boolean(System.getProperty(ITRConstants.IS_HARD_TOKEN)));
 		inputs.setHardTokenPin(System.getProperty(ITRConstants.HARD_TOKEN_PIN));
+		inputs.setHardTokenType(System.getProperty(ITRConstants.HARD_TOKEN_TYPE));
 		installDir = System.getProperty(ITRConstants.INSTALL_DIR);
 	}
 	
