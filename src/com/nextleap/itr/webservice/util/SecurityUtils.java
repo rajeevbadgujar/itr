@@ -1,15 +1,14 @@
 package com.nextleap.itr.webservice.util;
 import in.gov.incometaxindiaefiling.ws.ds.common.v_1_0.DITWSAuthInfo;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -29,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
@@ -49,11 +49,14 @@ import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+
 import org.apache.axis.encoding.Base64;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.PKCS11;
+
 import com.nextleap.itr.webservice.beans.ItrInputs;
 import com.nextleap.itr.webservice.constants.ITRConstants;
 /**
@@ -98,8 +101,8 @@ public class SecurityUtils {
 		File f = null;
 		FileWriter writer = null;
 		try {
-			URL dllUrl = new URL("file:///" + URLEncoder.encode(InputUtils.installDir) + getTokenVendor(hardwareType).getDllPath());
-			File dllFile = new File(URLDecoder.decode(dllUrl.getPath()));
+			URL dllUrl = new URL("file:///" + getTokenVendor(hardwareType).getDriverInstallPath());
+			File dllFile = new File(URLDecoder.decode(dllUrl.getPath(),"UTF-8"));
 			CK_C_INITIALIZE_ARGS initArgs = new CK_C_INITIALIZE_ARGS();
 			initArgs.flags = CKF_OS_LOCKING_OK;
 			PKCS11 tmpPKCS11 = null;
@@ -107,15 +110,29 @@ public class SecurityUtils {
 					dllFile.getCanonicalPath(), "C_GetFunctionList", initArgs, false);
 			long [] slots = tmpPKCS11.C_GetSlotList(true);
 			if(slots !=null && slots.length>0){
-				f= new File("temp.properties");
-				writer= new FileWriter(f);
-				writer.write("name = pkcs\nslot = "+slots[0]+"\nlibrary="+dllFile.getCanonicalPath());
-				writer.flush();
-				FileInputStream fs = new FileInputStream(f);
-				Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
-				Security.addProvider(prov);
-				keyStore = KeyStore.getInstance(ITRConstants.PKCS11,prov);
-				keyStore.load(null, hardTokenPin.toCharArray());
+				Boolean validToken = Boolean.FALSE;
+				String notValidTokenMsg = "";
+				for(long slot :slots){
+					try{
+						f= new File("temp.properties");
+						writer= new FileWriter(f);
+						writer.write("name = pkcs\nslot = "+slot+"\nlibrary="+dllFile.getCanonicalPath());
+						writer.flush();
+						FileInputStream fs = new FileInputStream(f);
+						Provider prov = new sun.security.pkcs11.SunPKCS11(fs);
+						Security.addProvider(prov);
+						keyStore = KeyStore.getInstance(ITRConstants.PKCS11,prov);
+						keyStore.load(null, hardTokenPin.toCharArray());
+						validToken = Boolean.TRUE;
+						break;
+					}catch(Exception ex){
+						validToken = Boolean.FALSE;
+						notValidTokenMsg = ex.getMessage();
+					}
+				}
+				if(!validToken){
+					throw new Exception(notValidTokenMsg);
+				}
 			} else{
 				throw new Exception("Not Able to read the Hardware token..Check if it is properly plugged in.");
 			}
