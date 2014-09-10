@@ -30,7 +30,8 @@ public enum TokenVendor {
 				dllPath = InputUtils.installDir + dllName;
 				break;
 			case FEITIANePASS2003:
-				dllPath =  getDefaultWindowsPath()+dllName;
+				dllPath =  InputUtils.installDir+dllName;
+				//dllPath = InputUtils.installDir + dllName;
 				break;
 			case ETOKENPRO72K:
 				dllPath =  getDefaultWindowsPath()+dllName;

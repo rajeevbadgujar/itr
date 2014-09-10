@@ -10,7 +10,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.crypto.MarshalException;
@@ -158,15 +162,26 @@ public class SecurityUtils {
 		PrivateKeyAndCertChain result = new PrivateKeyAndCertChain();
 		if (aKeyStore != null) {
 			Enumeration<String> aliasesEnum = aKeyStore.aliases();
-			/*result.certChain = new Certificate[aKeyStore.size()];*/
-			while (aliasesEnum.hasMoreElements()) {
-				String alias = (String) aliasesEnum.nextElement();
-				Certificate certificate509 = aKeyStore.getCertificate(alias);
-				if (!((X509Certificate)certificate509).getIssuerX500Principal().getName().equals(ITRConstants.CAC_INDIA)) {
-					result.certChain = aKeyStore.getCertificateChain(alias);
-					result.privateKey = (PrivateKey) aKeyStore.getKey(alias, aKeyPassword.toCharArray());
-					result.certificate = certificate509;
-				}
+			if(aKeyStore.size() >0){
+					while (aliasesEnum.hasMoreElements()) {
+						String alias = (String) aliasesEnum.nextElement();
+
+						Certificate certificate509 = aKeyStore.getCertificate(alias);
+						if (!((X509Certificate)certificate509).getIssuerX500Principal().getName().equals(ITRConstants.CAC_INDIA)) {
+							result.certChain = aKeyStore.getCertificateChain(alias);
+							result.privateKey = (PrivateKey) aKeyStore.getKey(alias, aKeyPassword.toCharArray());
+							if(result.privateKey == null){
+								 KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+						            kpg.initialize(512);
+						            KeyPair keyPair = kpg.generateKeyPair();
+						            result.privateKey = keyPair.getPrivate();
+							}
+							result.certificate = certificate509;
+						}
+					}
+			}else{
+				// Empty keyStore
+				throw new KeyStoreException("The keystore is empty with no certificate!");
 			}
 		} else {
 			throw new KeyStoreException("The keystore is empty!");
@@ -297,8 +312,5 @@ public class SecurityUtils {
 	private static TokenVendor getTokenVendor(String tokenVendor){
 		return TokenVendor.valueOf(tokenVendor);
 	}
-	
-
-	
 	
 }

@@ -36,7 +36,7 @@ set IS_HARDTOKEN=
 set HARDTOKEN_PIN=
 set XML_PFX_FILEPATH=
 set XML_PFX_FILE_PASSWORD=
-
+set HARDTOKEN_TYPE=
 
 REM -- Checking if the ITR_WEBSERVICE_CONFIG_FILE is set, else read the parameter after /c. If both are not set, come out with an error
 IF [X%ITR_WEBSERVICE_CONFIG_FILE%]==[X] (GOTO PARAMCHECK)
@@ -103,6 +103,8 @@ FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findst
 FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "HARDTOKENPIN"') DO SET HARDTOKEN_PIN=%%B
 FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "XMLPFXFILEPATH"') DO SET XML_PFX_FILEPATH=%%B
 FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "XMLPFXFILEPASSWORD"') DO SET XML_PFX_FILE_PASSWORD=%%B
+FOR /F "tokens=1* delims==" %%A IN ('type %ITR_WEBSERVICE_CONFIG_FILE% ^| findstr "HARDTOKENTYPE"') DO SET HARDTOKEN_TYPE=%%B
+
 
 
 if "X%ITR_WEBSERVICE_INSTALL_DIR%"=="X" (
@@ -139,7 +141,7 @@ REM -- ############## End of Reading Configuration File #######################
 :NEXT
 REM -- ############## execute the webservice #######################
 IF [%do_executeBulkItr%]==[1] ( 
-	set JAVA_OPTS_FOR_EXECUTE=%JAVA_OPTS% -DxmlPfxFilePath=%XML_PFX_FILEPATH% -DxmlPfxFilePassword=%XML_PFX_FILE_PASSWORD% -DxmlSignature=%IS_XMLSIGNED% -DhardToken=%IS_HARDTOKEN% -DhardTokenPin=%HARDTOKEN_PIN%  -DxmlZipFilePath="%XML_ZIP_FILE_PATH%"
+	set JAVA_OPTS_FOR_EXECUTE=%JAVA_OPTS% -DxmlPfxFilePath=%XML_PFX_FILEPATH% -DxmlPfxFilePassword=%XML_PFX_FILE_PASSWORD% -DxmlSignature=%IS_XMLSIGNED% -DhardToken=%IS_HARDTOKEN% -DhardTokenPin=%HARDTOKEN_PIN%  -DhardTokenType=%HARDTOKEN_TYPE% -DxmlZipFilePath="%XML_ZIP_FILE_PATH%"
 	echo %JAVA_OPTS_FOR_EXECUTE%
 	call  "%JRE_HOME%\bin\java" %JAVA_OPTS_FOR_EXECUTE% -cp "%ITR_WEBSERVICE_INSTALL_DIR%\lib\webservice_itr-1.0.jar";"%ITR_WEBSERVICE_INSTALL_DIR%\lib\axis-1.4.jar" com.nextleap.itr.webservice.ITRWebService itrWeb!123 >>"%ITR_WEBSERVICE_LOG_DIR%"\monitorWebService.log 2>&1
 	echo Done.
