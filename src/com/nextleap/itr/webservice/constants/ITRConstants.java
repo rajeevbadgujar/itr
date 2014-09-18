@@ -58,6 +58,14 @@ public interface ITRConstants {
 	String GAMALTO_64BIT_DLL = "/lib/IDPrimePKCS1164.dll";
 
 	String ETOKEN_PRO_32BIT_DLL = "/eTPKCS11.dll";
+	
+	String WATCHDOG_32BIT_DLL = "/lib/SPPKCSUtil.dll";
+	
+	String WATCHDOG_64BIT_DLL = "/lib/SPPKCSUtil64.dll";
+	
+	String TRUSTPKCS_32BIT_DLL = "/lib/TRUSTPKCSUtil.dll";
+	
+	String TRUSTPKCS_64BIT_DLL = "/lib/TRUSTPKCSUtil64.dll";
 
 	String ETOKEN_2003_32BIT_DLL = "/lib/eps2003csp11.dll";
 	//String ETOKEN_2003_32BIT_DLL = "/lib/opensc-minidriver.dll";
