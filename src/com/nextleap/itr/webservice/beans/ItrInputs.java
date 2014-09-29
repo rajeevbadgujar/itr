@@ -17,6 +17,24 @@ public class ItrInputs {
 	private boolean hardToken;
 	private String hardTokenPin;
 	private String hardTokenType;
+	private boolean generateSoftToken;
+	private boolean useSoftToken;
+
+	public boolean isUseSoftToken() {
+		return useSoftToken;
+	}
+
+	public void setUseSoftToken(boolean useSoftToken) {
+		this.useSoftToken = useSoftToken;
+	}
+
+	public boolean isGenerateSoftToken() {
+		return generateSoftToken;
+	}
+
+	public void setGenerateSoftToken(boolean generateSoftToken) {
+		this.generateSoftToken = generateSoftToken;
+	}
 
 	public String getHardTokenType() {
 		return hardTokenType;

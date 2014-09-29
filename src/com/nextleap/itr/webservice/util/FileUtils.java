@@ -1,9 +1,11 @@
 package com.nextleap.itr.webservice.util;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -36,9 +38,14 @@ public class FileUtils {
 		}
 	}
 
+	
 	public static byte[] readFromFileBytes(String filePath) throws FileNotFoundException, IOException {
-		File file = new File(filePath);
-	    FileInputStream fin = null;;
+		return readFromFileBytes(new File(filePath));
+	}
+	
+	
+	public static byte[] readFromFileBytes(File file) throws FileNotFoundException, IOException {
+		FileInputStream fin = null;;
 	    byte fileContent[] = null;
 		try {
 			fin = new FileInputStream(file);
@@ -55,4 +62,31 @@ public class FileUtils {
 		}
 		return fileContent;
 	}	
+
+	
+	 /**
+     * Writes the specified byte[] to the specified File path.
+     * 
+     * @param theFile File Object representing the path to write to.
+     * @param bytes The byte[] of data to write to the File.
+     * @throws IOException Thrown if there is problem creating or writing the 
+     * File.
+     */
+    public static void writeBytesToFile(File theFile, byte[] bytes) throws IOException {
+      BufferedOutputStream bos = null;
+      
+    try {
+      FileOutputStream fos = new FileOutputStream(theFile);
+      bos = new BufferedOutputStream(fos); 
+      bos.write(bytes);
+    }finally {
+      if(bos != null) {
+        try  {
+          //flush and close the BufferedOutputStream
+          bos.flush();
+          bos.close();
+        } catch(Exception e){}
+      }
+    }
+    }
 }

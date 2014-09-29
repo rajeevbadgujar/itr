@@ -10,7 +10,7 @@ public enum TokenVendor {
 	GEMALTO("GEMALTO",ITRConstants.GAMALTO_32BIT_DLL),
 	FEITIANePASS2003("FEITIANePASS2003",ITRConstants.ETOKEN_2003_32BIT_DLL),
 	ETOKENPRO72K("ETOKENPRO72K",ITRConstants.ETOKEN_PRO_32BIT_DLL),
-	WATCHDOG("WATCHDOG",ITRConstants.WATCHDOG_32BIT_DLL),
+	WATCHDATA("WATCHDATA",ITRConstants.WATCHDATA_32BIT_DLL),
 	TRUSTKEY("TRUSTKEY",ITRConstants.TRUSTPKCS_32BIT_DLL);
 
 	String key;
@@ -31,14 +31,14 @@ public enum TokenVendor {
 			case GEMALTO:
 				dllPath = InputUtils.installDir + dllName;
 				break;
-			case WATCHDOG:
-				dllPath = InputUtils.installDir + dllName;
+			case WATCHDATA:
+				dllPath = getDefaultWindowsPath()+dllName;
 				break;
 			case TRUSTKEY:
-				dllPath = InputUtils.installDir + dllName;
+				dllPath = getDefaultWindowsPath()+dllName;
 				break;
 			case FEITIANePASS2003:
-				dllPath =  InputUtils.installDir+dllName;
+				dllPath =  getDefaultWindowsPath()+dllName;
 				break;
 			case ETOKENPRO72K:
 				dllPath =  getDefaultWindowsPath()+dllName;

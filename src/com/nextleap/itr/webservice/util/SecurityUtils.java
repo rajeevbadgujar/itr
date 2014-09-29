@@ -13,7 +13,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.crypto.MarshalException;
@@ -55,11 +53,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.axis.encoding.Base64;
+import org.apache.commons.lang3.SerializationUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS;
 import sun.security.pkcs11.wrapper.PKCS11;
+import sun.security.x509.X509CertImpl;
 
 import com.nextleap.itr.webservice.beans.ItrInputs;
 import com.nextleap.itr.webservice.constants.ITRConstants;
@@ -169,6 +169,10 @@ public class SecurityUtils {
 						Certificate certificate509 = aKeyStore.getCertificate(alias);
 						if (!((X509Certificate)certificate509).getIssuerX500Principal().getName().equals(ITRConstants.CAC_INDIA)) {
 							result.certChain = aKeyStore.getCertificateChain(alias);
+							if(result.certChain == null){
+								result.certChain =  new X509CertImpl[1];
+								result.certChain[0] = certificate509;
+							}
 							result.privateKey = (PrivateKey) aKeyStore.getKey(alias, aKeyPassword.toCharArray());
 							if(result.privateKey == null){
 								 KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -216,6 +220,11 @@ public class SecurityUtils {
 		String digitalSignatureStr = Base64.encode(digitalSignature);
 		return digitalSignatureStr;
 	}
+	
+	
+	public static DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
+		return populateAndStoreAuthInfo(input,Boolean.FALSE);
+	}
 	/**
 	 * @param cc
 	 * @param signature
@@ -223,24 +232,33 @@ public class SecurityUtils {
 	 * @throws IOException
 	 * @throws GeneralSecurityException
 	 */
-	public static DITWSAuthInfo populateAuthInfo(ItrInputs input) throws GeneralSecurityException, IOException, Exception {
+	public static DITWSAuthInfo populateAndStoreAuthInfo(ItrInputs input,Boolean toStore) throws GeneralSecurityException, IOException, Exception {
 		DITWSAuthInfo authInfo = new DITWSAuthInfo();
 		authInfo.setUserID(input.getEriUserId());
 		authInfo.setPassword(input.getEriPassowrd());
-		KeyStore ks = null;
-		String password = "";
-		// TODO meed this in future when we support auth using hard token
-		// if(input.isHardToken()) {
-		// ks = loadKeyStoreFromHardToken(input.getHardTokenPin());
-		// password = input.getHardTokenPin();
-		// }
-		// else {
-		ks = loadKeyStoreFromPFXFile(input.getEriPfxFilePath(), input.getEriPfxFilePassword());
-		password = input.getEriPfxFilePassword();
-		// }
-		PrivateKeyAndCertChain pkcc = getPrivateKeyAndCertChain(ks, password);
-		String cc = encodeX509CertChainToBase64(pkcc.certChain);
-		String signature = signature(pkcc.privateKey);
+		String cc;
+		String signature;
+		if(input.isUseSoftToken()){
+			cc = loadCertificatChain(input.getHardTokenType());
+			signature = loadPassword(input.getHardTokenType());
+		}else{
+			KeyStore ks = null;
+			String password = "";
+//		 if(input.isHardToken()) {
+//			 ks = loadKeyStoreFromHardToken(input.getHardTokenPin(),input.getHardTokenType());
+//			 password = input.getHardTokenPin();
+//		 }
+//		 else {
+			 ks = loadKeyStoreFromPFXFile(input.getEriPfxFilePath(), input.getEriPfxFilePassword());
+			 password = input.getEriPfxFilePassword();
+//		 }
+		 PrivateKeyAndCertChain pkcc = getPrivateKeyAndCertChain(ks, password);
+		  cc = encodeX509CertChainToBase64(pkcc.certChain);
+		  signature = signature(pkcc.privateKey);
+		}
+		if(toStore){
+			store(cc,signature,input.getHardTokenType());
+		}
 		authInfo.setCertChain(cc);
 		authInfo.setSignature(signature);
 		return authInfo;
@@ -313,4 +331,36 @@ public class SecurityUtils {
 		return TokenVendor.valueOf(tokenVendor);
 	}
 	
+	/**
+	 * Store the certificate chain and the password 
+	 */
+	private static Boolean store(String certificateChain, String signature,String hardwareTokenType) throws IOException{
+		Boolean isSuccessful = Boolean.TRUE;
+		byte[] sCertificateChain= SerializationUtils.serialize(certificateChain);
+		byte[] ssignature= SerializationUtils.serialize(signature);
+		TokenVendor token = getTokenVendor(hardwareTokenType);
+		File f = new File(InputUtils.installDir+File.separator+token.getKey(),"certificate");
+		f.getParentFile().mkdirs();
+		File f1 = new File(InputUtils.installDir+File.separator+token.getKey(),"signature");
+		f1.getParentFile().mkdirs();
+		FileUtils.writeBytesToFile(f,sCertificateChain);
+		FileUtils.writeBytesToFile(f1,ssignature);
+		return isSuccessful;
+	}
+	
+	private static String loadCertificatChain(String hardwareTokenType) throws Exception{
+		    TokenVendor token = getTokenVendor(hardwareTokenType);
+			File f = new File(InputUtils.installDir+File.separator+token.getKey(),"certificate");
+			byte[] cc = FileUtils.readFromFileBytes(f);
+			return	(String)SerializationUtils.deserialize(cc);		
+	}
+
+	
+	private static String loadPassword(String hardwareTokenType) throws Exception{
+		TokenVendor token = getTokenVendor(hardwareTokenType);
+		File f = new File(InputUtils.installDir+File.separator+token.getKey(),"signature");
+		byte[] pp = FileUtils.readFromFileBytes(f);
+		return	(String)SerializationUtils.deserialize(pp);
+}
+
 }

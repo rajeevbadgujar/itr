@@ -49,6 +49,10 @@ public interface ITRConstants {
 	
 	String HARD_TOKEN_TYPE = "hardTokenType";
 	
+	String GENERATE_SOFT_TOKEN = "generateSoftToken";
+	
+	String USE_SOFT_TOKEN = "useSoftToken";
+	
 	String PKCS11 = "PKCS11";
 	
 	String INSTALL_DIR = "installDir";
@@ -59,15 +63,16 @@ public interface ITRConstants {
 
 	String ETOKEN_PRO_32BIT_DLL = "/eTPKCS11.dll";
 	
-	String WATCHDOG_32BIT_DLL = "/lib/SPPKCSUtil.dll";
+	// These are provider name of  the  hardware token .. which can be loaded dynamically.
+	String WATCHDATA_32BIT_DLL = "/Watchdata/PROXKey CSP India V1.0/wdpkcs.dll";
 	
-	String WATCHDOG_64BIT_DLL = "/lib/SPPKCSUtil64.dll";
+	String WATCHDATA_64BIT_DLL = "/lib/SPPKCSUtil64.dll";
 	
-	String TRUSTPKCS_32BIT_DLL = "/lib/TRUSTPKCSUtil.dll";
+	String TRUSTPKCS_32BIT_DLL = "/TRUST KEY/TRUST KEY CSP V1.0/wdpkcs.dll";
 	
 	String TRUSTPKCS_64BIT_DLL = "/lib/TRUSTPKCSUtil64.dll";
 
-	String ETOKEN_2003_32BIT_DLL = "/lib/eps2003csp11.dll";
+	String ETOKEN_2003_32BIT_DLL = "/eps2003csp11.dll";
 	//String ETOKEN_2003_32BIT_DLL = "/lib/opensc-minidriver.dll";
 	
 	

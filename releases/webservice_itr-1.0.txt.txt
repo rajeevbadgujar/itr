@@ -1,3 +1,13 @@
 This version of webservice_itr jar contains
 1. submitITR webservice implementation with xml signing
+
 2. statusITR webservice implementation 
+
+3. Generate the soft token for the given hardware.
+
+java -DhardTokenPin=smart.123 -DhardTokenType=FEITIANePASS2003 -DhardToken=true -DinstallDir="C:\\project\\itrwebservice\\itr" -cp lib\* com.nextleap.itr.webservice.ITRVGenerateSoftToken
+
+
+4. Use the soft token for the given hardware
+
+java -DeriUserId=ERIU102411 -DeriPassword=Digit2k!!! -DxmlSignature=false -DpfxFilePath=C:\\WSDL\\yogesh.pfx -DpfxFilePassword=smart -DxmlZipFilePath="c:\\WSDL\\I2_1106.zip"  -DresponseFilePath="c:\\WSDL\\itrResponse.txt" -DerrorFilePath="c:\\WSDL\\error.txt"  -DinstallDir="C:\\project\\itrwebservice\\itr" -DuseSoftToken=true -DhardTokenType=ETOKENPRO72K com.nextleap.itr.webservice.ITRWebService

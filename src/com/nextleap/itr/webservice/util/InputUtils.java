@@ -23,6 +23,8 @@ public class InputUtils {
 		inputs.setHardToken(new Boolean(System.getProperty(ITRConstants.IS_HARD_TOKEN)));
 		inputs.setHardTokenPin(System.getProperty(ITRConstants.HARD_TOKEN_PIN));
 		inputs.setHardTokenType(System.getProperty(ITRConstants.HARD_TOKEN_TYPE));
+		inputs.setGenerateSoftToken(new Boolean(System.getProperty(ITRConstants.GENERATE_SOFT_TOKEN)));
+		inputs.setUseSoftToken(new Boolean(System.getProperty(ITRConstants.USE_SOFT_TOKEN)));
 		installDir = System.getProperty(ITRConstants.INSTALL_DIR);
 	}
 	
@@ -36,6 +38,15 @@ public class InputUtils {
 		return validate;
 	}
 
+	public static boolean validateForITRVGenerateSoftToken(ItrInputs inputs) {
+		boolean validate = true;
+		if((inputs.getHardTokenType()==null || inputs.getHardTokenType().equals(""))
+				&& (inputs.getHardTokenPin() == null || inputs.getHardTokenPin().equals(""))) {
+			validate = false;
+		} 
+		return validate;
+	}
+	
 	/**
 	 * @param inputs
 	 * @return
@@ -50,8 +61,10 @@ public class InputUtils {
 		boolean validate = true;
 		if((inputs.getEriUserId()==null || inputs.getEriUserId().equals(""))
 				|| (inputs.getEriPassowrd()==null || inputs.getEriPassowrd().equals(""))
-				|| (inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
-				|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))) {
+				
+				|| (!(inputs.isUseSoftToken() &&  (inputs.getHardTokenType() != null && inputs.getHardTokenType().length()>0)) 
+				&& ((inputs.getEriPfxFilePath()==null || inputs.getEriPfxFilePath().equals(""))
+				|| (inputs.getEriPfxFilePassword()==null || inputs.getEriPfxFilePassword().equals(""))))) {
 			validate = false;
 		}
 		return validate;
