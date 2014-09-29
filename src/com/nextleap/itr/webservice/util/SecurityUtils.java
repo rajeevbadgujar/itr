@@ -244,14 +244,14 @@ public class SecurityUtils {
 		}else{
 			KeyStore ks = null;
 			String password = "";
-//		 if(input.isHardToken()) {
-//			 ks = loadKeyStoreFromHardToken(input.getHardTokenPin(),input.getHardTokenType());
-//			 password = input.getHardTokenPin();
-//		 }
-//		 else {
+		 if(input.isGenerateSoftToken()) {
+			 ks = loadKeyStoreFromHardToken(input.getHardTokenPin(),input.getHardTokenType());
+			 password = input.getHardTokenPin();
+		 }
+		 else {
 			 ks = loadKeyStoreFromPFXFile(input.getEriPfxFilePath(), input.getEriPfxFilePassword());
 			 password = input.getEriPfxFilePassword();
-//		 }
+		 }
 		 PrivateKeyAndCertChain pkcc = getPrivateKeyAndCertChain(ks, password);
 		  cc = encodeX509CertChainToBase64(pkcc.certChain);
 		  signature = signature(pkcc.privateKey);

@@ -16,6 +16,7 @@ public class ITRVGenerateSoftToken {
 	}
 	ItrInputs inputs = new ItrInputs();
 	InputUtils.populateItrReturnInputs(inputs);
+	inputs.setGenerateSoftToken(Boolean.TRUE);
 	if(!InputUtils.validateForITRVGenerateSoftToken(inputs)) {
 		System.out.println("Please provide required inputs." + inputs.toString());
 		System.exit(1);
